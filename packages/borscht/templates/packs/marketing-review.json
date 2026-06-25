@@ -1,0 +1,15 @@
+{
+  "id": "marketing-review",
+  "name": "Marketing review",
+  "description": "Review a marketing asset/campaign signal, then publish externally (approval-gated).",
+  "risk_class": "P1",
+  "actions": ["analysis", "content_publish"],
+  "tool_scopes": ["markdown_export"],
+  "tags": ["marketing", "review", "publish"],
+  "requires_approval_hint": true,
+  "signal_fields": ["text", "url"],
+  "execution_plan": [
+    { "action": "analysis", "title": "Marketing review notes" },
+    { "action": "content_publish", "title": "Publish reviewed asset" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "spend-controls",
+  "title": "Spend controls",
+  "description": "P1 control: spend increases and campaign launches require approval.",
+  "active": true,
+  "rules": [
+    {
+      "id": "p1-spend-increase",
+      "severity": "P1",
+      "scope": "action",
+      "effect": "require_approval",
+      "reason": "Spend increase / budget mutation requires human approval (P1).",
+      "match": { "action_in": ["spend_increase", "campaign_launch", "budget_change"] }
+    }
+  ]
+}

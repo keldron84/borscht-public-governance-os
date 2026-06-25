@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node / UI
+node_modules/
+apps/ui/dist/
+
+# Borscht local runtime data (created at runtime, not versioned)
+data/runs/*.json
+data/evidence/**
+data/logs/*.jsonl
+data/*.sqlite
+data/*.sqlite-*
+data/identity.json
+data/policies.local.json
+data/settings.local.json
+
+# Keep the data dir structure
+!data/runs/.gitkeep
+!data/evidence/.gitkeep
+!data/logs/.gitkeep
+
+# OS
+.DS_Store

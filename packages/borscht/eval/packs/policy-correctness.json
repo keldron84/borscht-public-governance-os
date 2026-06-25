@@ -1,0 +1,29 @@
+{
+  "id": "policy-correctness",
+  "title": "Policy correctness",
+  "type": "regression",
+  "blocking": false,
+  "cases": [
+    {
+      "id": "pc-blank-low-risk",
+      "workflow": "blank",
+      "signal": { "text": "Summarize this internal note" },
+      "risk_class": "P2",
+      "expect_effect": "allow"
+    },
+    {
+      "id": "pc-client-change-approval",
+      "workflow": "client-change-request",
+      "signal": { "text": "Change the client billing cycle" },
+      "risk_class": "P1",
+      "expect_effect": "require_approval"
+    },
+    {
+      "id": "pc-content-publish-approval",
+      "workflow": "content-publish",
+      "signal": { "text": "Publish the weekly newsletter" },
+      "risk_class": "P1",
+      "expect_effect": "require_approval"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "content-publish",
+  "name": "Content publish",
+  "description": "Draft and publish content externally; approval-gated outbound action.",
+  "risk_class": "P1",
+  "actions": ["draft", "external_publish"],
+  "tool_scopes": ["markdown_export"],
+  "tags": ["content", "publish"],
+  "requires_approval_hint": true,
+  "signal_fields": ["text"],
+  "execution_plan": [
+    { "action": "draft", "title": "Content draft" },
+    { "action": "external_publish", "title": "Publish content" }
+  ]
+}

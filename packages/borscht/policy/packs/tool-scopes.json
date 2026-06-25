@@ -1,0 +1,16 @@
+{
+  "id": "tool-scopes",
+  "title": "Tool scopes",
+  "description": "P2 baseline: low-risk internal analysis/drafts are allowed without approval.",
+  "active": true,
+  "rules": [
+    {
+      "id": "p2-internal-allow",
+      "severity": "P2",
+      "scope": "tool",
+      "effect": "allow",
+      "reason": "Low-risk internal draft/analysis/summary; allowed.",
+      "match": { "action_in": ["analysis", "draft", "summary", "internal_note"] }
+    }
+  ]
+}

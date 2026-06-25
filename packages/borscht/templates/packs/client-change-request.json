@@ -1,0 +1,15 @@
+{
+  "id": "client-change-request",
+  "name": "Client change request",
+  "description": "Process a client change request; data mutation requires approval.",
+  "risk_class": "P1",
+  "actions": ["analysis", "data_mutation"],
+  "tool_scopes": ["json_export"],
+  "tags": ["client", "change-request"],
+  "requires_approval_hint": true,
+  "signal_fields": ["text"],
+  "execution_plan": [
+    { "action": "analysis", "title": "Change impact analysis" },
+    { "action": "data_mutation", "title": "Apply client change" }
+  ]
+}

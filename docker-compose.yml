@@ -1,0 +1,13 @@
+services:
+  borscht:
+    build: .
+    ports:
+      - "8799:8799"
+    volumes:
+      - borscht-data:/app/data
+    environment:
+      - BORSCHT_HOST=0.0.0.0
+      - BORSCHT_PORT=8799
+
+volumes:
+  borscht-data:

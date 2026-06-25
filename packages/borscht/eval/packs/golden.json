@@ -1,0 +1,29 @@
+{
+  "id": "golden",
+  "title": "Golden flows",
+  "type": "golden",
+  "blocking": true,
+  "cases": [
+    {
+      "id": "golden-marketing-approval",
+      "workflow": "marketing-review",
+      "signal": { "text": "Review and publish the new landing page copy" },
+      "risk_class": "P1",
+      "expect_effect": "require_approval"
+    },
+    {
+      "id": "golden-incident-allow",
+      "workflow": "incident-postmortem",
+      "signal": { "text": "Write up the outage timeline for the internal wiki" },
+      "risk_class": "P2",
+      "expect_effect": "allow"
+    },
+    {
+      "id": "golden-spend-approval",
+      "workflow": "spend-approval",
+      "signal": { "text": "Increase Meta budget", "amount": "5000" },
+      "risk_class": "P1",
+      "expect_effect": "require_approval"
+    }
+  ]
+}

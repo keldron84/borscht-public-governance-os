@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+"""Thin launcher so `apps/cli/borscht` works without installing the package."""
+
+import sys
+from pathlib import Path
+
+PACKAGES = Path(__file__).resolve().parents[2] / "packages"
+if str(PACKAGES) not in sys.path:
+    sys.path.insert(0, str(PACKAGES))
+
+from borscht.cli import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "borscht-public"
+version = "1.0.0"
+description = "Borscht Public Edition — a small but complete agent governance control plane (Signal → Triage → Decision → Execution → Evidence)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Borscht" }]
+keywords = ["agent", "governance", "control-plane", "policy", "evidence", "audit"]
+dependencies = []
+
+[project.scripts]
+borscht = "borscht.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[tool.setuptools.packages.find]
+where = ["packages"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

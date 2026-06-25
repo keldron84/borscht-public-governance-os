@@ -1,0 +1,15 @@
+{
+  "id": "spend-approval",
+  "name": "Spend increase request",
+  "description": "Request a budget/spend increase; requires human approval before applying.",
+  "risk_class": "P1",
+  "actions": ["analysis", "spend_increase"],
+  "tool_scopes": ["json_export"],
+  "tags": ["spend", "budget", "approval"],
+  "requires_approval_hint": true,
+  "signal_fields": ["text", "amount"],
+  "execution_plan": [
+    { "action": "analysis", "title": "Spend rationale" },
+    { "action": "spend_increase", "title": "Apply spend increase" }
+  ]
+}

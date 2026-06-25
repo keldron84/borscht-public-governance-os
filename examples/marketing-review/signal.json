@@ -1,0 +1,9 @@
+{
+  "workflow": "marketing-review",
+  "risk_class": "P1",
+  "owner": "user:operator",
+  "signal": {
+    "text": "Review the new landing page hero copy and publish it to the marketing site.",
+    "url": "https://example.com/landing-draft"
+  }
+}

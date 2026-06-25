@@ -1,0 +1,8 @@
+{
+  "workflow": "content-publish",
+  "risk_class": "P1",
+  "owner": "user:operator",
+  "signal": {
+    "text": "Draft and publish this week's product newsletter to subscribers."
+  }
+}

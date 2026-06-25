@@ -1,0 +1,16 @@
+{
+  "id": "external-publish",
+  "title": "External publish",
+  "description": "P1 control: anything that publishes or sends outside the org needs human approval.",
+  "active": true,
+  "rules": [
+    {
+      "id": "p1-external-publish",
+      "severity": "P1",
+      "scope": "action",
+      "effect": "require_approval",
+      "reason": "Action publishes/sends externally; human approval required before execution.",
+      "match": { "action_in": ["external_publish", "outbound_message", "content_publish"] }
+    }
+  ]
+}

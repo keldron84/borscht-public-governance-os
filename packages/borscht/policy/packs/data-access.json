@@ -1,0 +1,24 @@
+{
+  "id": "data-access",
+  "title": "Data access & mutation",
+  "description": "P1 control: data mutations and high-risk runs require approval.",
+  "active": true,
+  "rules": [
+    {
+      "id": "p1-data-mutation",
+      "severity": "P1",
+      "scope": "data",
+      "effect": "require_approval",
+      "reason": "Data mutation action requires human approval (P1).",
+      "match": { "action_in": ["data_mutation", "data_write"] }
+    },
+    {
+      "id": "p1-high-risk-run",
+      "severity": "P1",
+      "scope": "run",
+      "effect": "require_approval",
+      "reason": "Run is classified P0/P1 risk; human approval required before execution.",
+      "match": { "risk_class_in": ["P0", "P1"] }
+    }
+  ]
+}

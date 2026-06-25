@@ -1,0 +1,15 @@
+{
+  "id": "incident-postmortem",
+  "name": "Incident postmortem",
+  "description": "Low-risk internal postmortem write-up; allowed without approval.",
+  "risk_class": "P2",
+  "actions": ["analysis", "summary", "internal_note"],
+  "tool_scopes": ["markdown_export"],
+  "tags": ["incident", "postmortem", "internal"],
+  "requires_approval_hint": false,
+  "signal_fields": ["text"],
+  "execution_plan": [
+    { "action": "analysis", "title": "Timeline & root cause" },
+    { "action": "summary", "title": "Postmortem summary" }
+  ]
+}

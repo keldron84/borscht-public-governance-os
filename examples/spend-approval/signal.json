@@ -1,0 +1,9 @@
+{
+  "workflow": "spend-approval",
+  "risk_class": "P1",
+  "owner": "user:operator",
+  "signal": {
+    "text": "Increase the Meta Ads daily budget for the Q3 launch campaign.",
+    "amount": "5000"
+  }
+}
