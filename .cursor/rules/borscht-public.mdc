@@ -1,0 +1,35 @@
+---
+description: Borscht Public Edition project conventions (cross-tool, mirrors AGENTS.md)
+alwaysApply: true
+---
+
+# Borscht Public Edition — Cursor rules
+
+Source of truth: [`AGENTS.md`](../../AGENTS.md). This rule mirrors the key points
+so Cursor always applies them; if they ever diverge, `AGENTS.md` wins. The repo
+must work identically under Cursor, OpenAI Codex, and Google Antigravity.
+
+## Hard constraints
+
+- **Backend = Python standard library only.** No runtime pip deps in the engine.
+  Keep **Python 3.9 compatible** (`from __future__ import annotations`; no
+  `match`; no `X | Y` runtime unions).
+- **One orchestrator:** route new behavior through `packages/borscht/core/engine.py`.
+  Don't duplicate the Signal→Triage→Decision→Execution→Evidence loop.
+- **Single state language:** statuses/verdicts/risk live in `core/models.py`.
+- **Policies are JSON** packs; fail-closed `deny > require_approval > allow`.
+- **UI:** React 18 + Vite + TS (strict). New npm dep ⇒ update `package.json` **and**
+  `package-lock.json`.
+
+## Quality gate (before claiming done)
+
+1. `python3 -m pytest` green.
+2. `python3 apps/cli/borscht test` → `release`.
+3. UI changed ⇒ `cd apps/ui && npm run build` succeeds.
+
+## Off-limits
+
+- Never commit secrets. `data/`, `node_modules/`, `apps/ui/dist/` are git-ignored —
+  don't force-add. Don't edit `apps/ui/dist/`.
+- Keep v1 offline & deterministic: no required Neo4j / graph DB / LLM.
+- No push / remote creation without explicit maintainer request.

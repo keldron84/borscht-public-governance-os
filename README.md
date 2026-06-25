@@ -67,6 +67,15 @@ borscht init | dev | run | approve | reject | hold | waive | retry
 - Frontend: **React 18 + Vite + TypeScript**.
 - Packaging: local CLI + `./scripts/serve.sh` + Docker Compose.
 
+## Works with any agent tool
+
+Contributors can use **Cursor**, **OpenAI Codex**, or **Google Antigravity** —
+the project ships a single, tool-agnostic guide in [`AGENTS.md`](AGENTS.md)
+(read natively by all three) plus thin shims that point back to it:
+[`GEMINI.md`](GEMINI.md) for Antigravity and `.cursor/rules/` for Cursor. Build,
+test, and run commands use standard `python3` / `npm`, so nothing is locked to a
+particular editor.
+
 ## Layout
 
 ```
