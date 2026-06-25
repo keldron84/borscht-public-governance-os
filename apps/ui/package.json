@@ -2,6 +2,10 @@
   "name": "borscht-public-ui",
   "private": true,
   "version": "1.0.0",
+  "contributors": [
+    "Nikita Grigorovich <nikita@borscht.mobi> (https://github.com/keldron84)",
+    "Kirr Simakovs <kired.simakov@gmail.com> (https://github.com/kirr-simakovs)"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

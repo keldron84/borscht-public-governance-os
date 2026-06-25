@@ -9,7 +9,14 @@ description = "Borscht Public Edition — a small but complete agent governance 
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "Borscht" }]
+authors = [
+  { name = "Nikita Grigorovich", email = "nikita@borscht.mobi" },
+  { name = "Kirr Simakovs", email = "kired.simakov@gmail.com" },
+]
+maintainers = [
+  { name = "Nikita Grigorovich", email = "nikita@borscht.mobi" },
+  { name = "Kirr Simakovs", email = "kired.simakov@gmail.com" },
+]
 keywords = ["agent", "governance", "control-plane", "policy", "evidence", "audit"]
 dependencies = []
 
