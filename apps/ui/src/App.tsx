@@ -4,7 +4,9 @@ import {
   NavLink,
   Route,
   Routes,
+  useLocation,
   useNavigate,
+  useSearchParams,
 } from "react-router-dom";
 import { api } from "./api";
 import { useI18n, SUPPORTED } from "./i18n";
@@ -32,6 +34,8 @@ const NAV = [
 
 function TopBar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [params] = useSearchParams();
   const { t, lang, setLang } = useI18n();
   const [q, setQ] = React.useState("");
   const [paused, setPaused] = React.useState(false);
@@ -40,11 +44,18 @@ function TopBar() {
     api.settings().then((s) => setPaused(s.emergency_pause)).catch(() => {});
   }, []);
 
+  React.useEffect(() => {
+    if (location.pathname === "/runs") {
+      setQ(params.get("q") || "");
+    }
+  }, [location.pathname, params]);
+
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const term = q.trim();
     if (term.startsWith("run-")) navigate(`/runs/${term}`);
     else if (term) navigate(`/runs?q=${encodeURIComponent(term)}`);
+    else navigate("/runs");
   };
 
   const togglePause = async () => {

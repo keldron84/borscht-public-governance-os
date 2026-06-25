@@ -1,17 +1,18 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, WorkflowTemplate } from "../api";
-import { useT } from "../i18n";
+import { useI18n } from "../i18n";
 import { Card, EffectBadge, ErrorState, Loading, RiskBadge, useAsync } from "../components/ui";
 
 export default function NewRun() {
   const navigate = useNavigate();
-  const t = useT();
+  const { t, templateName, templateDesc, signalField } = useI18n();
   const STEPS = [t("nr.step.choose"), t("nr.step.signal"), t("nr.step.context"), t("nr.step.confirm")];
   const [params] = useSearchParams();
+  const workflowParam = params.get("workflow") || "";
   const { data, error, loading } = useAsync(() => api.templates(), []);
-  const [step, setStep] = React.useState(0);
-  const [workflow, setWorkflow] = React.useState<string>(params.get("workflow") || "");
+  const [step, setStep] = React.useState(workflowParam ? 1 : 0);
+  const [workflow, setWorkflow] = React.useState<string>(workflowParam);
   const [signal, setSignal] = React.useState<Record<string, string>>({});
   const [owner, setOwner] = React.useState("user:operator");
   const [risk, setRisk] = React.useState("");
@@ -19,12 +20,26 @@ export default function NewRun() {
   const [submitting, setSubmitting] = React.useState(false);
   const [submitErr, setSubmitErr] = React.useState("");
 
+  React.useEffect(() => {
+    const w = params.get("workflow");
+    if (w) {
+      setWorkflow(w);
+      setStep((s) => (s === 0 ? 1 : s));
+    }
+  }, [params]);
+
   if (loading) return <Loading />;
   if (error) return <ErrorState error={error} />;
   const templates = data!.templates;
   const tpl: WorkflowTemplate | undefined = templates.find((x) => x.id === workflow);
 
   const fields = tpl?.signal_fields || ["text"];
+  const signalComplete = fields.every((f) => (signal[f] || "").trim().length > 0);
+  const canNext =
+    step === 0 ? !!workflow
+    : step === 1 ? !!tpl && signalComplete
+    : step === 2 ? !!tpl
+    : false;
 
   const runSimulate = async () => {
     if (!tpl) return;
@@ -77,10 +92,10 @@ export default function NewRun() {
               onClick={() => setWorkflow(tpl2.id)}
             >
               <div className="row between">
-                <strong>{tpl2.name}</strong>
+                <strong>{templateName(tpl2.id, tpl2.name)}</strong>
                 <RiskBadge risk={tpl2.risk_class} />
               </div>
-              <p className="muted" style={{ minHeight: 40 }}>{tpl2.description}</p>
+              <p className="muted" style={{ minHeight: 40 }}>{templateDesc(tpl2.id, tpl2.description)}</p>
               {tpl2.requires_approval_hint && <span className="badge eff-require_approval">{t("nr.mayNeedApproval")}</span>}
             </div>
           ))}
@@ -88,14 +103,22 @@ export default function NewRun() {
       )}
 
       {step === 1 && tpl && (
-        <Card title={t("nr.signalFor", { name: tpl.name })}>
+        <Card title={t("nr.signalFor", { name: templateName(tpl.id, tpl.name) })}>
           {fields.map((f) => (
             <label className="field" key={f}>
-              <span>{f}</span>
+              <span>{signalField(f)}</span>
               {f === "text" ? (
-                <textarea value={signal[f] || ""} onChange={(e) => setSignal({ ...signal, [f]: e.target.value })} />
+                <textarea
+                  required
+                  value={signal[f] || ""}
+                  onChange={(e) => setSignal({ ...signal, [f]: e.target.value })}
+                />
               ) : (
-                <input value={signal[f] || ""} onChange={(e) => setSignal({ ...signal, [f]: e.target.value })} />
+                <input
+                  required
+                  value={signal[f] || ""}
+                  onChange={(e) => setSignal({ ...signal, [f]: e.target.value })}
+                />
               )}
             </label>
           ))}
@@ -123,7 +146,7 @@ export default function NewRun() {
         <Card title={t("nr.confirm")}>
           <table>
             <tbody>
-              <tr><th>{t("nr.workflow")}</th><td>{tpl.name}</td></tr>
+              <tr><th>{t("nr.workflow")}</th><td>{templateName(tpl.id, tpl.name)}</td></tr>
               <tr><th>{t("nr.owner")}</th><td>{owner}</td></tr>
               <tr><th>{t("rd.risk")}</th><td><RiskBadge risk={risk || tpl.risk_class} /></td></tr>
               <tr><th>{t("nr.intendedActions")}</th><td>{tpl.actions.join(", ")}</td></tr>
@@ -137,7 +160,7 @@ export default function NewRun() {
       <div className="btn-row" style={{ marginTop: 20 }}>
         <button disabled={step === 0} onClick={() => setStep((s) => s - 1)}>{t("common.back")}</button>
         {step < 3 ? (
-          <button className="btn-primary" disabled={step === 0 && !workflow} onClick={next}>{t("common.next")}</button>
+          <button className="btn-primary" disabled={!canNext} onClick={next}>{t("common.next")}</button>
         ) : (
           <button className="btn-primary" disabled={submitting} onClick={submit}>
             {submitting ? t("nr.starting") : t("nr.startRun")}

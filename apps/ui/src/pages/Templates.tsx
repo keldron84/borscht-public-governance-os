@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
-import { useT } from "../i18n";
+import { useI18n } from "../i18n";
 import { ErrorState, Loading, RiskBadge, useAsync } from "../components/ui";
 
 export default function Templates() {
   const navigate = useNavigate();
-  const t = useT();
+  const { t, templateName, templateDesc } = useI18n();
   const { data, error, loading } = useAsync(() => api.templates(), []);
   if (loading) return <Loading />;
   if (error) return <ErrorState error={error} />;
@@ -23,10 +23,10 @@ export default function Templates() {
         {data!.templates.map((tpl) => (
           <div className="card" key={tpl.id}>
             <div className="row between">
-              <strong>{tpl.name}</strong>
+              <strong>{templateName(tpl.id, tpl.name)}</strong>
               <RiskBadge risk={tpl.risk_class} />
             </div>
-            <p className="muted" style={{ minHeight: 44 }}>{tpl.description}</p>
+            <p className="muted" style={{ minHeight: 44 }}>{templateDesc(tpl.id, tpl.description)}</p>
             <div style={{ marginBottom: 8 }}>
               {tpl.tags.map((tag) => <span key={tag} className="tag">{tag}</span>)}
             </div>

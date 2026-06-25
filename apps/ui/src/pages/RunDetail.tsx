@@ -170,7 +170,7 @@ export default function RunDetail() {
               <p className="dim">{t("rd.waitingApproval")}</p>
               <div className="btn-row">
                 <button className="btn-ok" disabled={busy} onClick={() => act("approve", { actor: "approver:lead" })}>{t("rd.approve")}</button>
-                <button className="btn-danger" disabled={busy} onClick={() => act("reject", { actor: "approver:lead" })}>{t("rd.reject")}</button>
+                <button className="btn-danger" disabled={busy} onClick={() => act("reject", { actor: "approver:lead", reason: t("rd.rejectedFromUi") })}>{t("rd.reject")}</button>
               </div>
             </Card>
           )}

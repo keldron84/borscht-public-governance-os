@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import { useT } from "../i18n";
-import { Empty, ErrorState, Loading, RiskBadge, StatusBadge, useAsync } from "../components/ui";
+import { useI18n } from "../i18n";
+import { Empty, ErrorState, Loading, RiskBadge, StatusBadge, useAsync, ClickableRow } from "../components/ui";
 
 const FILTERS = [
   { key: "", labelKey: "runs.filter.all" },
@@ -15,7 +15,7 @@ const FILTERS = [
 
 export default function Runs() {
   const navigate = useNavigate();
-  const t = useT();
+  const { t, templateName } = useI18n();
   const [params] = useSearchParams();
   const [status, setStatus] = React.useState("");
   const q = (params.get("q") || "").toLowerCase();
@@ -33,7 +33,6 @@ export default function Runs() {
           <h1>{t("runs.title")}</h1>
           <p>{t("runs.subtitle")}</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate("/new")}>{t("top.newRun")}</button>
       </div>
 
       <div className="steps">
@@ -47,8 +46,9 @@ export default function Runs() {
       {runs.length === 0 ? (
         <Empty title={t("runs.emptyTitle")} hint={t("runs.emptyHint")} action={<button className="btn-primary" onClick={() => navigate("/new")}>{t("ov.newRun")}</button>} />
       ) : (
-        <div className="card" style={{ padding: 0 }}>
-          <table>
+        <div className="card table-card">
+          <div className="table-wrap">
+          <table className="runs-table">
             <thead>
               <tr>
                 <th>{t("runs.col.run")}</th><th>{t("runs.col.workflow")}</th><th>{t("runs.col.status")}</th><th>{t("runs.col.owner")}</th>
@@ -57,19 +57,23 @@ export default function Runs() {
             </thead>
             <tbody>
               {runs.map((r) => (
-                <tr key={r.id} style={{ cursor: "pointer" }} onClick={() => navigate(`/runs/${r.id}`)}>
-                  <td className="mono">{r.id.replace("run-", "")}</td>
-                  <td>{r.workflow}</td>
+                <ClickableRow key={r.id} label={r.title} onClick={() => navigate(`/runs/${r.id}`)}>
+                  <td className="run-cell">
+                    <span className="run-title">{r.title}</span>
+                    <span className="mono dim run-id" title={r.id}>{r.id.replace("run-", "")}</span>
+                  </td>
+                  <td>{templateName(r.workflow, r.workflow)}</td>
                   <td><StatusBadge status={r.status} /></td>
                   <td className="dim">{r.owner}</td>
                   <td><RiskBadge risk={r.risk_class} /></td>
                   <td>{r.verdict}</td>
                   <td>{r.evidence_count}</td>
                   <td className="muted">{r.updated_at.replace("T", " ").slice(0, 16)}</td>
-                </tr>
+                </ClickableRow>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -210,6 +210,21 @@ const en: Dict = {
   "tpl.likely": "likely required",
   "tpl.notRequired": "not required",
   "tpl.use": "Use template",
+  "tpl.blank.name": "Blank workflow",
+  "tpl.blank.desc": "Start from scratch: provide a signal and let policy decide.",
+  "tpl.marketing-review.name": "Marketing review",
+  "tpl.marketing-review.desc": "Review a marketing asset/campaign signal, then publish externally (approval-gated).",
+  "tpl.client-change-request.name": "Client change request",
+  "tpl.client-change-request.desc": "Process a client change request; data mutation requires approval.",
+  "tpl.content-publish.name": "Content publish",
+  "tpl.content-publish.desc": "Draft and publish content externally; approval-gated outbound action.",
+  "tpl.incident-postmortem.name": "Incident postmortem",
+  "tpl.incident-postmortem.desc": "Low-risk internal postmortem write-up; allowed without approval.",
+  "tpl.spend-approval.name": "Spend increase request",
+  "tpl.spend-approval.desc": "Request a budget/spend increase; requires human approval before applying.",
+  "signal.text": "Text",
+  "signal.url": "URL",
+  "signal.amount": "Amount",
   // Settings
   "set.title": "Settings",
   "set.subtitle": "Essentials only. Frequently used controls live on the working screens, not here.",
@@ -325,7 +340,7 @@ const ru: Dict = {
   "runs.col.owner": "Владелец",
   "runs.col.risk": "Риск",
   "runs.col.verdict": "Вердикт",
-  "runs.col.evidence": "Evidence",
+  "runs.col.evidence": "Артефакты",
   "runs.col.updated": "Обновлён",
   "rd.tab.summary": "Сводка",
   "rd.tab.trace": "Трассировка",
@@ -429,6 +444,21 @@ const ru: Dict = {
   "tpl.likely": "скорее всего нужно",
   "tpl.notRequired": "не требуется",
   "tpl.use": "Использовать шаблон",
+  "tpl.blank.name": "Пустой процесс",
+  "tpl.blank.desc": "С нуля: задайте сигнал и дайте политике принять решение.",
+  "tpl.marketing-review.name": "Маркетинговый обзор",
+  "tpl.marketing-review.desc": "Проверка маркетингового материала/кампании с последующей внешней публикацией (через подтверждение).",
+  "tpl.client-change-request.name": "Запрос изменения от клиента",
+  "tpl.client-change-request.desc": "Обработка запроса на изменение; мутация данных требует подтверждения.",
+  "tpl.content-publish.name": "Публикация контента",
+  "tpl.content-publish.desc": "Черновик и публикация контента наружу; исходящее действие через подтверждение.",
+  "tpl.incident-postmortem.name": "Postmortem инцидента",
+  "tpl.incident-postmortem.desc": "Низкорисковый внутренний postmortem; без обязательного подтверждения.",
+  "tpl.spend-approval.name": "Запрос увеличения расходов",
+  "tpl.spend-approval.desc": "Запрос на увеличение бюджета/расходов; требуется подтверждение человеком.",
+  "signal.text": "Текст",
+  "signal.url": "URL",
+  "signal.amount": "Сумма",
   "set.title": "Настройки",
   "set.subtitle": "Только важное. Часто используемые элементы — на рабочих экранах, а не здесь.",
   "set.save": "Сохранить",
@@ -476,6 +506,9 @@ interface I18nCtx {
   setLang: (l: Lang) => void;
   t: Translate;
   policyReason: (ruleId: string, fallback: string) => string;
+  templateName: (id: string, fallback: string) => string;
+  templateDesc: (id: string, fallback: string) => string;
+  signalField: (field: string) => string;
 }
 
 const Ctx = React.createContext<I18nCtx | null>(null);
@@ -526,9 +559,34 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     [lang],
   );
 
+  const templateName = React.useCallback(
+    (id: string, fallback: string) => {
+      const table = TABLES[lang] || en;
+      return table["tpl." + id + ".name"] ?? en["tpl." + id + ".name"] ?? fallback;
+    },
+    [lang],
+  );
+
+  const templateDesc = React.useCallback(
+    (id: string, fallback: string) => {
+      const table = TABLES[lang] || en;
+      return table["tpl." + id + ".desc"] ?? en["tpl." + id + ".desc"] ?? fallback;
+    },
+    [lang],
+  );
+
+  const signalField = React.useCallback(
+    (field: string) => {
+      const key = "signal." + field;
+      const table = TABLES[lang] || en;
+      return table[key] ?? en[key] ?? field;
+    },
+    [lang],
+  );
+
   const value = React.useMemo<I18nCtx>(
-    () => ({ lang, setLang, t, policyReason }),
-    [lang, setLang, t, policyReason],
+    () => ({ lang, setLang, t, policyReason, templateName, templateDesc, signalField }),
+    [lang, setLang, t, policyReason, templateName, templateDesc, signalField],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -1,11 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
-import { useT } from "../i18n";
-import { Card, ErrorState, Kpi, Loading, RiskBadge, StatusBadge, useAsync, Empty } from "../components/ui";
+import { useI18n } from "../i18n";
+import { Card, ErrorState, Kpi, Loading, RiskBadge, StatusBadge, useAsync, Empty, ClickableRow } from "../components/ui";
+
+const DEMO_WORKFLOW = "marketing-review";
 
 export default function Overview() {
   const navigate = useNavigate();
-  const t = useT();
+  const { t, templateName } = useI18n();
   const { data, error, loading } = useAsync(() => api.overview(), []);
 
   if (loading) return <Loading />;
@@ -22,7 +24,7 @@ export default function Overview() {
           <h1>{t("ov.title")}</h1>
           <p>{t("ov.subtitle")}</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate("/new")}>{t("ov.runDemo")}</button>
+        <button className="btn-primary" onClick={() => navigate(`/new?workflow=${DEMO_WORKFLOW}`)}>{t("ov.runDemo")}</button>
       </div>
 
       {data.emergency_pause && <div className="banner warn">{t("ov.pauseBanner")}</div>}
@@ -31,7 +33,7 @@ export default function Overview() {
         <Empty
           title={t("ov.emptyTitle")}
           hint={t("ov.emptyHint")}
-          action={<button className="btn-primary" onClick={() => navigate("/new")}>{t("ov.newRun")}</button>}
+          action={<button className="btn-primary" onClick={() => navigate(`/new?workflow=${DEMO_WORKFLOW}`)}>{t("ov.newRun")}</button>}
         />
       ) : (
         <>
@@ -50,11 +52,11 @@ export default function Overview() {
                 <table>
                   <tbody>
                     {data.attention.map((r) => (
-                      <tr key={r.id} style={{ cursor: "pointer" }} onClick={() => navigate(`/runs/${r.id}`)}>
+                      <ClickableRow key={r.id} label={r.title} onClick={() => navigate(`/runs/${r.id}`)}>
                         <td><StatusBadge status={r.status} /></td>
                         <td>{r.title}</td>
                         <td><RiskBadge risk={r.risk_class} /></td>
-                      </tr>
+                      </ClickableRow>
                     ))}
                   </tbody>
                 </table>
@@ -65,11 +67,11 @@ export default function Overview() {
               <table>
                 <tbody>
                   {data.recent.map((r) => (
-                    <tr key={r.id} style={{ cursor: "pointer" }} onClick={() => navigate(`/runs/${r.id}`)}>
+                    <ClickableRow key={r.id} label={r.title} onClick={() => navigate(`/runs/${r.id}`)}>
                       <td className="mono">{r.id.slice(0, 18)}</td>
-                      <td>{r.workflow}</td>
+                      <td>{templateName(r.workflow, r.workflow)}</td>
                       <td><StatusBadge status={r.status} /></td>
-                    </tr>
+                    </ClickableRow>
                   ))}
                 </tbody>
               </table>

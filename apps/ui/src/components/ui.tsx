@@ -15,6 +15,35 @@ export function EffectBadge({ effect }: { effect: string }) {
   return <span className={`badge eff-${effect}`}>{t("effect." + effect)}</span>;
 }
 
+export function ClickableRow({
+  onClick,
+  children,
+  label,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  label: string;
+}) {
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
+  return (
+    <tr
+      role="button"
+      tabIndex={0}
+      aria-label={label}
+      className="clickable-row"
+      onClick={onClick}
+      onKeyDown={onKey}
+    >
+      {children}
+    </tr>
+  );
+}
+
 export function Card({ title, children, actions }: { title?: string; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
     <div className="card">
