@@ -20,6 +20,10 @@ must work identically under Cursor, OpenAI Codex, and Google Antigravity.
 - **Policies are JSON** packs; fail-closed `deny > require_approval > allow`.
 - **UI:** React 18 + Vite + TS (strict). New npm dep ⇒ update `package.json` **and**
   `package-lock.json`.
+- **i18n (en/ru, no deps):** route user-facing text through dictionaries —
+  `apps/ui/src/i18n.tsx` (`useT()`) and `packages/borscht/i18n.py` (`i18n.t`).
+  Keep machine tokens (statuses, verdicts, action names, `rule_id`) canonical;
+  localize prose/labels only.
 
 ## Quality gate (before claiming done)
 

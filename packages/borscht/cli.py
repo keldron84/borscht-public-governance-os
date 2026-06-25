@@ -12,9 +12,20 @@ import sys
 from typing import Any, Dict, Optional
 
 from borscht import config
+from borscht import i18n
 from borscht.core.engine import Engine, EngineError
 from borscht.eval.runner import run_suite
 from borscht.trace.timeline import build_timeline
+
+
+def _err(msg) -> None:
+    print("{0}: {1}".format(i18n.t("cli.error"), msg), file=sys.stderr)
+
+
+def _status_line(run) -> None:
+    print("{0}: {1}  {2}: {3}".format(
+        i18n.t("cli.status"), i18n.status_label(run.status),
+        i18n.t("cli.verdict"), run.verdict))
 
 
 def _print(obj: Any) -> None:
@@ -38,9 +49,9 @@ def cmd_init(args) -> int:
     eng = Engine()  # creates data dir, db, identity, default settings
     config.load_settings()
     config.save_settings(config.load_settings())
-    print("Initialized Borscht data at: {0}".format(config.data_dir()))
-    print("Templates available: {0}".format(", ".join(t.id for t in eng.templates.list())))
-    print("Policy packs: {0}".format(", ".join(p.id for p in eng.policy.packs())))
+    print(i18n.t("cli.initialized", path=config.data_dir()))
+    print(i18n.t("cli.templates_available", items=", ".join(t.id for t in eng.templates.list())))
+    print(i18n.t("cli.policy_packs", items=", ".join(p.id for p in eng.policy.packs())))
     return 0
 
 
@@ -59,7 +70,7 @@ def cmd_run(args) -> int:
     payload = _load_signal(args)
     workflow = args.workflow or payload.get("workflow")
     if not workflow:
-        print("error: workflow required", file=sys.stderr)
+        _err(i18n.t("cli.workflow_required"))
         return 2
     try:
         run = eng.create_run(
@@ -70,11 +81,11 @@ def cmd_run(args) -> int:
             title=args.title or "",
         )
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("run: {0}".format(run.id))
-    print("status: {0}  verdict: {1}".format(run.status, run.verdict))
-    print("explanation: {0}".format(run.explanation))
+    print("{0}: {1}".format(i18n.t("cli.run"), run.id))
+    _status_line(run)
+    print("{0}: {1}".format(i18n.t("cli.explanation"), run.explanation))
     return 0
 
 
@@ -83,9 +94,9 @@ def cmd_approve(args) -> int:
     try:
         run = eng.approve(args.run_id, approver=args.actor)
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("status: {0}  verdict: {1}".format(run.status, run.verdict))
+    _status_line(run)
     return 0
 
 
@@ -94,9 +105,9 @@ def cmd_reject(args) -> int:
     try:
         run = eng.reject(args.run_id, approver=args.actor, reason=args.reason or "")
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("status: {0}".format(run.status))
+    print("{0}: {1}".format(i18n.t("cli.status"), i18n.status_label(run.status)))
     return 0
 
 
@@ -105,9 +116,9 @@ def cmd_hold(args) -> int:
     try:
         run = eng.hold(args.run_id, actor=args.actor)
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("status: {0}".format(run.status))
+    print("{0}: {1}".format(i18n.t("cli.status"), i18n.status_label(run.status)))
     return 0
 
 
@@ -116,9 +127,9 @@ def cmd_waive(args) -> int:
     try:
         run = eng.waive(args.run_id, actor=args.actor, reason=args.reason or "")
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("status: {0}  verdict: {1}".format(run.status, run.verdict))
+    _status_line(run)
     return 0
 
 
@@ -127,9 +138,9 @@ def cmd_rollback(args) -> int:
     try:
         run = eng.rollback(args.run_id, actor=args.actor, reason=args.reason or "")
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("status: {0}".format(run.status))
+    print("{0}: {1}".format(i18n.t("cli.status"), i18n.status_label(run.status)))
     return 0
 
 
@@ -138,9 +149,9 @@ def cmd_retry(args) -> int:
     try:
         run = eng.retry(args.run_id, actor=args.actor)
     except EngineError as exc:
-        print("error: {0}".format(exc), file=sys.stderr)
+        _err(exc)
         return 1
-    print("status: {0}".format(run.status))
+    print("{0}: {1}".format(i18n.t("cli.status"), i18n.status_label(run.status)))
     return 0
 
 
@@ -148,23 +159,24 @@ def cmd_trace(args) -> int:
     eng = Engine()
     run = eng.get_run(args.run_id)
     if run is None:
-        print("error: run not found", file=sys.stderr)
+        _err(i18n.t("cli.run_not_found"))
         return 1
     if args.json:
         _print({"run": run.to_dict(), "timeline": build_timeline(run)})
         return 0
-    print("Run {0} [{1}] verdict={2}".format(run.id, run.status, run.verdict))
-    print("Workflow: {0}  Owner: {1}  Risk: {2}".format(run.workflow, run.owner, run.risk_class))
+    print(i18n.t("cli.trace_header", id=run.id, status=i18n.status_label(run.status), verdict=run.verdict))
+    print(i18n.t("cli.trace_meta", workflow=run.workflow, owner=run.owner, risk=run.risk_class))
     print("-" * 60)
     for ev in build_timeline(run):
         print("{0:>2}. {1:<10} {2:<16} {3:<8} {4}".format(
             ev["index"], ev["name"], ev["actor"], ev["outcome"], ev["detail"]))
     if run.policy_decisions:
         print("-" * 60)
-        print("Policy:")
+        print(i18n.t("cli.policy_label"))
         for d in run.policy_decisions:
             print("  [{0}] {1} {2} -> {3}: {4}".format(
-                d.severity, d.pack, d.rule_id, d.effect, d.reason))
+                d.severity, d.pack, d.rule_id, d.effect,
+                i18n.policy_reason(d.rule_id, d.reason)))
     return 0
 
 
@@ -178,7 +190,7 @@ def cmd_runs(args) -> int:
         print("{0}  {1:<18} {2:<18} {3:<6} {4}".format(
             r.id, r.status, r.workflow, r.risk_class, r.title))
     if not runs:
-        print("(no runs)")
+        print(i18n.t("cli.no_runs"))
     return 0
 
 
@@ -188,9 +200,9 @@ def cmd_test(args) -> int:
         _print(result)
     else:
         s = result["summary"]
-        print("Eval: {0}/{1} passed ({2}%)  blocking_failures={3}  -> {4}".format(
-            s["passed"], s["total"], s["pass_rate"], s["blocking_failures"],
-            s["release_recommendation"].upper()))
+        print(i18n.t("cli.eval_line", passed=s["passed"], total=s["total"],
+                     rate=s["pass_rate"], bf=s["blocking_failures"],
+                     rec=s["release_recommendation"].upper()))
         for p in result["packs"]:
             print("  [{0}] {1}: {2}/{3}".format(
                 p["type"], p["title"], p["passed"], p["total"]))
@@ -205,7 +217,7 @@ def cmd_export(args) -> int:
     eng = Engine()
     run = eng.get_run(args.run_id)
     if run is None:
-        print("error: run not found", file=sys.stderr)
+        _err(i18n.t("cli.run_not_found"))
         return 1
     bundle = {
         "run": run.to_dict(),
@@ -217,7 +229,7 @@ def cmd_export(args) -> int:
     }
     out = args.out or "{0}-export.json".format(run.id)
     open(out, "w", encoding="utf-8").write(json.dumps(bundle, indent=2, ensure_ascii=False))
-    print("exported: {0}".format(out))
+    print("{0}: {1}".format(i18n.t("cli.exported"), out))
     return 0
 
 
@@ -230,16 +242,17 @@ def cmd_policy(args) -> int:
         if args.json:
             _print(result)
         else:
-            print("effect: {0}".format(result["effect"]))
+            print("{0}: {1}".format(i18n.t("cli.effect"), result["effect"]))
             for d in result["decisions"]:
                 print("  [{0}] {1} {2} -> {3}: {4}".format(
-                    d["severity"], d["pack"], d["rule_id"], d["effect"], d["reason"]))
+                    d["severity"], d["pack"], d["rule_id"], d["effect"],
+                    i18n.policy_reason(d["rule_id"], d["reason"])))
         return 0
     if args.policy_cmd == "list":
         for p in eng.policy.packs():
             print("{0:<18} active={1}  rules={2}".format(p.id, p.active, len(p.rules)))
         return 0
-    print("error: unknown policy command", file=sys.stderr)
+    _err("unknown policy command")
     return 2
 
 
@@ -247,13 +260,15 @@ def cmd_import_template(args) -> int:
     eng = Engine()
     data = json.loads(open(args.file, "r", encoding="utf-8").read())
     tpl = eng.templates.install_from_dict(data)
-    print("installed template: {0}".format(tpl.id))
+    print(i18n.t("cli.installed_template", id=tpl.id))
     return 0
 
 
 # ---- parser --------------------------------------------------------------
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="borscht", description="Borscht Public Edition control plane")
+    p.add_argument("--lang", choices=list(i18n.SUPPORTED),
+                   help="output language (overrides BORSCHT_LANG / settings)")
     sub = p.add_subparsers(dest="cmd")
 
     sp = sub.add_parser("init", help="initialize local data + defaults")
@@ -334,6 +349,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[list] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if getattr(args, "lang", None):
+        import os
+        os.environ["BORSCHT_LANG"] = args.lang  # propagate to Engine re-resolve
+    i18n.set_lang(i18n.resolve_lang())
     if not getattr(args, "func", None):
         parser.print_help()
         return 0

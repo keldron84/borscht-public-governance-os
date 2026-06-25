@@ -82,6 +82,10 @@ a:hover { text-decoration: underline; }
   background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text-dim);
   padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
 }
+.lang-select {
+  background: var(--bg-elev-2); border: 1px solid var(--border); color: var(--text-dim);
+  padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; width: auto;
+}
 .content { padding: 24px; max-width: 1180px; width: 100%; }
 
 /* ---- typography ---- */

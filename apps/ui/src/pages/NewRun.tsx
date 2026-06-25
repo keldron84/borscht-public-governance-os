@@ -1,12 +1,13 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, WorkflowTemplate } from "../api";
+import { useT } from "../i18n";
 import { Card, EffectBadge, ErrorState, Loading, RiskBadge, useAsync } from "../components/ui";
-
-const STEPS = ["Choose workflow", "Provide signal", "Assign context", "Confirm"];
 
 export default function NewRun() {
   const navigate = useNavigate();
+  const t = useT();
+  const STEPS = [t("nr.step.choose"), t("nr.step.signal"), t("nr.step.context"), t("nr.step.confirm")];
   const [params] = useSearchParams();
   const { data, error, loading } = useAsync(() => api.templates(), []);
   const [step, setStep] = React.useState(0);
@@ -21,7 +22,7 @@ export default function NewRun() {
   if (loading) return <Loading />;
   if (error) return <ErrorState error={error} />;
   const templates = data!.templates;
-  const tpl: WorkflowTemplate | undefined = templates.find((t) => t.id === workflow);
+  const tpl: WorkflowTemplate | undefined = templates.find((x) => x.id === workflow);
 
   const fields = tpl?.signal_fields || ["text"];
 
@@ -53,8 +54,8 @@ export default function NewRun() {
     <div>
       <div className="page-head">
         <div>
-          <h1>New Run</h1>
-          <p>Think in terms of which case you are running and what you feed in — not internal architecture.</p>
+          <h1>{t("nr.title")}</h1>
+          <p>{t("nr.subtitle")}</p>
         </div>
       </div>
 
@@ -68,26 +69,26 @@ export default function NewRun() {
 
       {step === 0 && (
         <div className="grid cols-3">
-          {templates.map((t) => (
+          {templates.map((tpl2) => (
             <div
-              key={t.id}
+              key={tpl2.id}
               className="card"
-              style={{ cursor: "pointer", borderColor: workflow === t.id ? "var(--accent)" : undefined }}
-              onClick={() => setWorkflow(t.id)}
+              style={{ cursor: "pointer", borderColor: workflow === tpl2.id ? "var(--accent)" : undefined }}
+              onClick={() => setWorkflow(tpl2.id)}
             >
               <div className="row between">
-                <strong>{t.name}</strong>
-                <RiskBadge risk={t.risk_class} />
+                <strong>{tpl2.name}</strong>
+                <RiskBadge risk={tpl2.risk_class} />
               </div>
-              <p className="muted" style={{ minHeight: 40 }}>{t.description}</p>
-              {t.requires_approval_hint && <span className="badge eff-require_approval">may need approval</span>}
+              <p className="muted" style={{ minHeight: 40 }}>{tpl2.description}</p>
+              {tpl2.requires_approval_hint && <span className="badge eff-require_approval">{t("nr.mayNeedApproval")}</span>}
             </div>
           ))}
         </div>
       )}
 
       {step === 1 && tpl && (
-        <Card title={`Signal for ${tpl.name}`}>
+        <Card title={t("nr.signalFor", { name: tpl.name })}>
           {fields.map((f) => (
             <label className="field" key={f}>
               <span>{f}</span>
@@ -102,31 +103,31 @@ export default function NewRun() {
       )}
 
       {step === 2 && tpl && (
-        <Card title="Context">
+        <Card title={t("nr.context")}>
           <label className="field">
-            <span>Owner (holds the risk)</span>
+            <span>{t("nr.owner")}</span>
             <input value={owner} onChange={(e) => setOwner(e.target.value)} />
           </label>
           <label className="field">
-            <span>Risk class</span>
+            <span>{t("nr.riskClass")}</span>
             <select value={risk || tpl.risk_class} onChange={(e) => setRisk(e.target.value)}>
-              <option value="P0">P0 — destructive / secrets / outbound external</option>
-              <option value="P1">P1 — spend / publish / data mutation</option>
-              <option value="P2">P2 — low-risk internal</option>
+              <option value="P0">{t("nr.risk.p0")}</option>
+              <option value="P1">{t("nr.risk.p1")}</option>
+              <option value="P2">{t("nr.risk.p2")}</option>
             </select>
           </label>
         </Card>
       )}
 
       {step === 3 && tpl && (
-        <Card title="Confirm">
+        <Card title={t("nr.confirm")}>
           <table>
             <tbody>
-              <tr><th>Workflow</th><td>{tpl.name}</td></tr>
-              <tr><th>Owner</th><td>{owner}</td></tr>
-              <tr><th>Risk</th><td><RiskBadge risk={risk || tpl.risk_class} /></td></tr>
-              <tr><th>Intended actions</th><td>{tpl.actions.join(", ")}</td></tr>
-              <tr><th>Expected approval path</th><td>{preview ? <EffectBadge effect={preview.effect} /> : "—"}</td></tr>
+              <tr><th>{t("nr.workflow")}</th><td>{tpl.name}</td></tr>
+              <tr><th>{t("nr.owner")}</th><td>{owner}</td></tr>
+              <tr><th>{t("rd.risk")}</th><td><RiskBadge risk={risk || tpl.risk_class} /></td></tr>
+              <tr><th>{t("nr.intendedActions")}</th><td>{tpl.actions.join(", ")}</td></tr>
+              <tr><th>{t("nr.approvalPath")}</th><td>{preview ? <EffectBadge effect={preview.effect} /> : t("common.dash")}</td></tr>
             </tbody>
           </table>
           {submitErr && <div className="banner danger" style={{ marginTop: 12 }}>{submitErr}</div>}
@@ -134,12 +135,12 @@ export default function NewRun() {
       )}
 
       <div className="btn-row" style={{ marginTop: 20 }}>
-        <button disabled={step === 0} onClick={() => setStep((s) => s - 1)}>Back</button>
+        <button disabled={step === 0} onClick={() => setStep((s) => s - 1)}>{t("common.back")}</button>
         {step < 3 ? (
-          <button className="btn-primary" disabled={step === 0 && !workflow} onClick={next}>Next</button>
+          <button className="btn-primary" disabled={step === 0 && !workflow} onClick={next}>{t("common.next")}</button>
         ) : (
           <button className="btn-primary" disabled={submitting} onClick={submit}>
-            {submitting ? "Starting…" : "Start Run"}
+            {submitting ? t("nr.starting") : t("nr.startRun")}
           </button>
         )}
       </div>

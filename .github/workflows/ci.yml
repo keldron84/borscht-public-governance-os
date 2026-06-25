@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend (pytest + eval gate, en/ru)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Unit tests
+        run: python3 -m pytest -q
+      - name: Eval gate (English)
+        run: python3 apps/cli/borscht test
+      - name: Eval gate (Russian)
+        env:
+          BORSCHT_LANG: ru
+        run: python3 apps/cli/borscht test
+
+  ui:
+    name: UI (typecheck + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: apps/ui/package-lock.json
+      - name: Install (reproducible from lockfile)
+        run: npm ci
+      - name: Typecheck + build
+        run: npm run build

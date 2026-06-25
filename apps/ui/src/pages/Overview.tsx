@@ -1,10 +1,11 @@
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { useT } from "../i18n";
 import { Card, ErrorState, Kpi, Loading, RiskBadge, StatusBadge, useAsync, Empty } from "../components/ui";
 
 export default function Overview() {
   const navigate = useNavigate();
+  const t = useT();
   const { data, error, loading } = useAsync(() => api.overview(), []);
 
   if (loading) return <Loading />;
@@ -18,33 +19,33 @@ export default function Overview() {
     <div>
       <div className="page-head">
         <div>
-          <h1>Overview</h1>
-          <p>Operational front door. Is the system healthy, what needs attention, where to click next.</p>
+          <h1>{t("ov.title")}</h1>
+          <p>{t("ov.subtitle")}</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate("/new")}>Run demo workflow</button>
+        <button className="btn-primary" onClick={() => navigate("/new")}>{t("ov.runDemo")}</button>
       </div>
 
-      {data.emergency_pause && <div className="banner warn">Emergency pause is active — new runs are blocked.</div>}
+      {data.emergency_pause && <div className="banner warn">{t("ov.pauseBanner")}</div>}
 
       {empty ? (
         <Empty
-          title="Install a template and run your first governed workflow."
-          hint="Start with the marketing-review demo to see policy, approval, execution, evidence and trace."
-          action={<button className="btn-primary" onClick={() => navigate("/new")}>New Run</button>}
+          title={t("ov.emptyTitle")}
+          hint={t("ov.emptyHint")}
+          action={<button className="btn-primary" onClick={() => navigate("/new")}>{t("ov.newRun")}</button>}
         />
       ) : (
         <>
           <div className="grid cols-4" style={{ marginBottom: 16 }}>
-            <Kpi label="Active runs" value={k.active_runs} />
-            <Kpi label="Awaiting approvals" value={k.awaiting_approvals} tone={k.awaiting_approvals ? "alert" : undefined} />
-            <Kpi label="Blocked by policy" value={k.blocked_by_policy} tone={k.blocked_by_policy ? "danger" : undefined} />
-            <Kpi label="Success rate" value={`${k.success_rate}%`} />
+            <Kpi label={t("ov.kpi.active")} value={k.active_runs} />
+            <Kpi label={t("ov.kpi.awaiting")} value={k.awaiting_approvals} tone={k.awaiting_approvals ? "alert" : undefined} />
+            <Kpi label={t("ov.kpi.blocked")} value={k.blocked_by_policy} tone={k.blocked_by_policy ? "danger" : undefined} />
+            <Kpi label={t("ov.kpi.success")} value={`${k.success_rate}%`} />
           </div>
 
           <div className="grid cols-2">
-            <Card title="Needs attention">
+            <Card title={t("ov.attention")}>
               {data.attention.length === 0 ? (
-                <p className="muted">Nothing needs human review.</p>
+                <p className="muted">{t("ov.attentionEmpty")}</p>
               ) : (
                 <table>
                   <tbody>
@@ -60,7 +61,7 @@ export default function Overview() {
               )}
             </Card>
 
-            <Card title="Recent activity" actions={<Link to="/runs">All runs →</Link>}>
+            <Card title={t("ov.recent")} actions={<Link to="/runs">{t("ov.allRuns")}</Link>}>
               <table>
                 <tbody>
                   {data.recent.map((r) => (

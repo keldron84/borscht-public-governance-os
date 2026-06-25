@@ -157,6 +157,7 @@ export interface Actor {
 
 export interface Settings {
   environment: string;
+  language: string;
   current_actor: string;
   storage_path: string;
   default_risk_class: string;

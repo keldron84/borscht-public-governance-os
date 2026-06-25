@@ -1,5 +1,9 @@
 # Borscht Public Edition v1
 
+> 🌐 **Language / Язык:** English (this file) · [Русский](README.ru.md). The web
+> UI and CLI auto-detect your language (English / Russian) and you can switch it
+> in **Settings** or with `--lang` / `BORSCHT_LANG`.
+
 A small but **complete** agent governance control plane. Not a demo, not a
 chat playground — a local-first OS for the loop:
 
@@ -66,6 +70,24 @@ borscht init | dev | run | approve | reject | hold | waive | retry
 - Backend: **Python standard library only** (HTTP API, SQLite, JSON/JSONL).
 - Frontend: **React 18 + Vite + TypeScript**.
 - Packaging: local CLI + `./scripts/serve.sh` + Docker Compose.
+
+## Languages (i18n)
+
+The control plane is usable by non-English speakers out of the box — **English**
+and **Russian** ship in v1.
+
+- **Web UI** auto-detects the browser language; switch any time via the selector
+  in the top bar or **Settings → Interface & content language**. The choice is
+  stored locally and synced to the backend.
+- **CLI**: `borscht --lang ru run …` or `export BORSCHT_LANG=ru`. Resolution
+  order is `--lang` / `BORSCHT_LANG` → `language` setting → `en`.
+- **Generated content** (artifact bodies, trace step text, explanations) is
+  written in the active language; policy reasons are localized at display time.
+- **Docs**: Russian translations live in [`docs/ru/`](docs/ru/) and
+  [`README.ru.md`](README.ru.md).
+
+Adding a language means adding one dictionary in `apps/ui/src/i18n.tsx` (UI) and
+`packages/borscht/i18n.py` (backend) — no new dependencies.
 
 ## Works with any agent tool
 

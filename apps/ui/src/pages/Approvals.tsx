@@ -1,10 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { api, RunBrief } from "../api";
+import { useT } from "../i18n";
 import { Card, Empty, ErrorState, Loading, RiskBadge, useAsync } from "../components/ui";
 
 export default function Approvals() {
   const navigate = useNavigate();
+  const t = useT();
   const { data, error, loading, reload } = useAsync(() => api.approvals(), []);
   const [selected, setSelected] = React.useState<RunBrief | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -29,18 +31,18 @@ export default function Approvals() {
     <div>
       <div className="page-head">
         <div>
-          <h1>Approvals Inbox</h1>
-          <p>Human-in-the-loop, fast and transparent. Every item explains why approval is required.</p>
+          <h1>{t("ap.title")}</h1>
+          <p>{t("ap.subtitle")}</p>
         </div>
       </div>
 
       {runs.length === 0 ? (
-        <Empty title="Nothing needs human review." hint="Approval-gated runs will appear here." />
+        <Empty title={t("ap.emptyTitle")} hint={t("ap.emptyHint")} />
       ) : (
         <div className="detail-layout">
           <div className="card" style={{ padding: 0 }}>
             <table>
-              <thead><tr><th>Run</th><th>Risk</th><th>Owner</th><th>Waiting since</th></tr></thead>
+              <thead><tr><th>{t("ap.col.run")}</th><th>{t("ap.col.risk")}</th><th>{t("ap.col.owner")}</th><th>{t("ap.col.waiting")}</th></tr></thead>
               <tbody>
                 {runs.map((r) => (
                   <tr key={r.id} style={{ cursor: "pointer" }} onClick={() => setSelected(r)}>
@@ -55,19 +57,19 @@ export default function Approvals() {
           </div>
           <div className="sticky-side">
             {selected ? (
-              <Card title="Approval detail">
+              <Card title={t("ap.detail")}>
                 <p><strong>{selected.title}</strong></p>
                 <p className="dim mono">{selected.id}</p>
-                <div className="row between"><span className="muted">Risk</span><RiskBadge risk={selected.risk_class} /></div>
-                <div className="row between" style={{ margin: "6px 0" }}><span className="muted">Workflow</span><span>{selected.workflow}</span></div>
+                <div className="row between"><span className="muted">{t("ap.col.risk")}</span><RiskBadge risk={selected.risk_class} /></div>
+                <div className="row between" style={{ margin: "6px 0" }}><span className="muted">{t("ap.workflow")}</span><span>{selected.workflow}</span></div>
                 <div className="btn-row" style={{ marginTop: 14 }}>
-                  <button className="btn-ok" disabled={busy} onClick={() => decide("approve")}>Approve</button>
-                  <button className="btn-danger" disabled={busy} onClick={() => decide("reject")}>Reject</button>
+                  <button className="btn-ok" disabled={busy} onClick={() => decide("approve")}>{t("rd.approve")}</button>
+                  <button className="btn-danger" disabled={busy} onClick={() => decide("reject")}>{t("rd.reject")}</button>
                 </div>
-                <button className="btn-sm" style={{ marginTop: 10 }} onClick={() => navigate(`/runs/${selected.id}`)}>Open run detail →</button>
+                <button className="btn-sm" style={{ marginTop: 10 }} onClick={() => navigate(`/runs/${selected.id}`)}>{t("ap.openDetail")}</button>
               </Card>
             ) : (
-              <Card><p className="muted">Select a run to review.</p></Card>
+              <Card><p className="muted">{t("ap.selectRun")}</p></Card>
             )}
           </div>
         </div>

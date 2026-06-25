@@ -1,19 +1,21 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api";
+import { useT } from "../i18n";
 import { Empty, ErrorState, Loading, RiskBadge, StatusBadge, useAsync } from "../components/ui";
 
 const FILTERS = [
-  { key: "", label: "All" },
-  { key: "awaiting_approval", label: "Awaiting approval" },
-  { key: "blocked_by_policy", label: "Blocked" },
-  { key: "failed", label: "Failed" },
-  { key: "succeeded", label: "Succeeded" },
-  { key: "rolled_back", label: "Rolled back" },
+  { key: "", labelKey: "runs.filter.all" },
+  { key: "awaiting_approval", labelKey: "runs.filter.awaiting" },
+  { key: "blocked_by_policy", labelKey: "runs.filter.blocked" },
+  { key: "failed", labelKey: "runs.filter.failed" },
+  { key: "succeeded", labelKey: "runs.filter.succeeded" },
+  { key: "rolled_back", labelKey: "runs.filter.rolled_back" },
 ];
 
 export default function Runs() {
   const navigate = useNavigate();
+  const t = useT();
   const [params] = useSearchParams();
   const [status, setStatus] = React.useState("");
   const q = (params.get("q") || "").toLowerCase();
@@ -28,29 +30,29 @@ export default function Runs() {
     <div>
       <div className="page-head">
         <div>
-          <h1>Runs</h1>
-          <p>One operational inbox for every case. Sorted by what needs attention first.</p>
+          <h1>{t("runs.title")}</h1>
+          <p>{t("runs.subtitle")}</p>
         </div>
-        <button className="btn-primary" onClick={() => navigate("/new")}>+ New Run</button>
+        <button className="btn-primary" onClick={() => navigate("/new")}>{t("top.newRun")}</button>
       </div>
 
       <div className="steps">
         {FILTERS.map((f) => (
           <button key={f.key} className={`step-chip ${status === f.key ? "active" : ""}`} onClick={() => setStatus(f.key)}>
-            {f.label}
+            {t(f.labelKey)}
           </button>
         ))}
       </div>
 
       {runs.length === 0 ? (
-        <Empty title="No runs yet." hint="Create your first governed run." action={<button className="btn-primary" onClick={() => navigate("/new")}>New Run</button>} />
+        <Empty title={t("runs.emptyTitle")} hint={t("runs.emptyHint")} action={<button className="btn-primary" onClick={() => navigate("/new")}>{t("ov.newRun")}</button>} />
       ) : (
         <div className="card" style={{ padding: 0 }}>
           <table>
             <thead>
               <tr>
-                <th>Run</th><th>Workflow</th><th>Status</th><th>Owner</th>
-                <th>Risk</th><th>Verdict</th><th>Evidence</th><th>Updated</th>
+                <th>{t("runs.col.run")}</th><th>{t("runs.col.workflow")}</th><th>{t("runs.col.status")}</th><th>{t("runs.col.owner")}</th>
+                <th>{t("runs.col.risk")}</th><th>{t("runs.col.verdict")}</th><th>{t("runs.col.evidence")}</th><th>{t("runs.col.updated")}</th>
               </tr>
             </thead>
             <tbody>

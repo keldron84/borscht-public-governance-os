@@ -82,12 +82,23 @@ UI — route new behavior through it, never duplicate the loop.
 - **UI:** React 18 + Vite + TypeScript, strict mode. No new npm deps without
   updating both `package.json` **and** `package-lock.json`.
 - New workflow? Add a template JSON whose `actions` match existing policy packs.
+- **i18n (en/ru), no deps.** User-facing text must go through the dictionaries,
+  not be hardcoded: UI in `apps/ui/src/i18n.tsx` (`useT()` / `useI18n()`),
+  backend in `packages/borscht/i18n.py` (`i18n.t(key, **kwargs)`). Keep machine
+  tokens (status codes, verdicts `GO/HOLD/STOP`, action names, policy `rule_id`)
+  **canonical/English**; localize only prose and labels. Add a language = add one
+  dict to each file (+ `BORSCHT_LANG` / `--lang` already resolve it). Generated
+  artifact/trace content is localized at creation via the active language.
 
 ## Before changes & quality checks
 
 1. `python3 -m pytest` → all green.
 2. `python3 apps/cli/borscht test` → `release` recommendation.
-3. If UI changed: `cd apps/ui && npm run build` must succeed.
+3. If UI changed: `cd apps/ui && npm run build` must succeed (runs `tsc --noEmit`
+   then `vite build`).
+
+CI (`.github/workflows/ci.yml`) runs exactly these: pytest + eval gate (en **and**
+ru via `BORSCHT_LANG`) on Python 3.9/3.12, and `npm ci && npm run build` for the UI.
 
 ## Off-limits / safety
 

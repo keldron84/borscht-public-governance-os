@@ -77,6 +77,7 @@ EVAL_PACKS_DIR = PACKAGE_ROOT / "eval" / "packs"
 
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "environment": "local",
+    "language": "en",  # UI/CLI/content language; "en" or "ru" (UI auto-detects)
     "current_actor": "user:operator",
     "storage_path": "",  # empty => default data_dir()
     "default_risk_class": "P1",

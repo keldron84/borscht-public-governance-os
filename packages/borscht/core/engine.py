@@ -10,6 +10,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 from borscht import config
+from borscht import i18n
 from borscht.core.ids import now_iso, run_id, step_id
 from borscht.core.models import (
     PolicyEffect,
@@ -34,6 +35,7 @@ class EngineError(Exception):
 
 class Engine:
     def __init__(self) -> None:
+        i18n.set_lang(i18n.resolve_lang())
         self.store = EvidenceStore()
         self.policy = PolicyEngine()
         self.identity = IdentityRegistry()
@@ -108,21 +110,22 @@ class Engine:
 
         # 1) Signal
         self._add_step(run, "signal", actor, "ok",
-                       "Signal received for workflow '{0}'.".format(workflow),
+                       i18n.t("step.signal_received", workflow=workflow),
                        raw={"signal": signal})
 
         # 2) Triage / context
         recalled: List[Dict[str, Any]] = []
         if use_memory:
             recalled = self.memory.recall(workflow, self._signal_text(signal), run.tags)
-        run.task_contract = (
-            "Workflow '{0}' (risk {1}). Intended actions: {2}. "
-            "Owner {3} holds the risk.".format(
-                tpl.name, rc, ", ".join(tpl.actions) or "none", owner
-            )
+        run.task_contract = i18n.t(
+            "contract.text",
+            name=tpl.name,
+            risk=rc,
+            actions=", ".join(tpl.actions) or i18n.t("actions.none"),
+            owner=owner,
         )
         self._add_step(run, "context", "agent:triage", "ok",
-                       "Task contract built; {0} similar past run(s) recalled.".format(len(recalled)),
+                       i18n.t("step.context_built", n=len(recalled)),
                        raw={"task_contract": run.task_contract, "recalled": recalled})
 
         self.store.save_run(run)
@@ -144,9 +147,9 @@ class Engine:
 
         if effect == PolicyEffect.DENY:
             self._add_step(run, "policy", "agent:triage", "denied",
-                           "Policy denied execution.", raw={"effect": effect}, duration_ms=dur)
+                           i18n.t("step.policy_denied"), raw={"effect": effect}, duration_ms=dur)
             run.verdict = Verdict.STOP
-            run.explanation = self._first_reason(decisions, PolicyEffect.DENY) or "Denied by policy."
+            run.explanation = self._first_reason(decisions, PolicyEffect.DENY) or i18n.t("explain.denied_default")
             self._set_status(run, RunStatus.BLOCKED_BY_POLICY)
             self.store.save_run(run)
             self.store.append_event({"event": "run_blocked", "run_id": run.id})
@@ -154,12 +157,12 @@ class Engine:
 
         if effect == PolicyEffect.REQUIRE_APPROVAL:
             self._add_step(run, "policy", "agent:triage", "pending",
-                           "Policy requires human approval before execution.",
+                           i18n.t("step.policy_approval"),
                            raw={"effect": effect}, duration_ms=dur)
             run.verdict = Verdict.HOLD
             run.explanation = (
                 self._first_reason(decisions, PolicyEffect.REQUIRE_APPROVAL)
-                or "Human approval required."
+                or i18n.t("explain.approval_default")
             )
             self._set_status(run, RunStatus.AWAITING_APPROVAL)
             self.store.save_run(run)
@@ -168,10 +171,10 @@ class Engine:
 
         # allow
         self._add_step(run, "policy", "agent:triage", "ok",
-                       "Policy allows execution.", raw={"effect": effect}, duration_ms=dur)
+                       i18n.t("step.policy_allow"), raw={"effect": effect}, duration_ms=dur)
         run.verdict = Verdict.GO
-        run.explanation = "Allowed by policy; executed automatically."
-        self._add_step(run, "decision", "agent:triage", "ok", "Verdict: GO.")
+        run.explanation = i18n.t("explain.allowed")
+        self._add_step(run, "decision", "agent:triage", "ok", i18n.t("step.decision_go"))
         self._execute(run, actor)
 
     def _execute(self, run: Run, actor: str) -> None:
@@ -197,37 +200,41 @@ class Engine:
                                result.detail, raw={"action": action_type, "evidence": ev.id},
                                duration_ms=dur)
             self._add_step(run, "evidence", "agent:executor", "ok",
-                           "{0} evidence artifact(s) written.".format(len(run.evidence)))
+                           i18n.t("step.evidence_written", n=len(run.evidence)))
             run.verdict = Verdict.GO
             self._set_status(run, RunStatus.SUCCEEDED)
             self.store.append_event({"event": "run_succeeded", "run_id": run.id})
         except ExecutionError as exc:
             self._add_step(run, "execution", "agent:executor", "failed", str(exc))
             run.verdict = Verdict.STOP
-            run.explanation = "Execution failed: {0}".format(exc)
+            run.explanation = i18n.t("explain.exec_failed", error=exc)
             self._set_status(run, RunStatus.FAILED)
             self.store.append_event({"event": "run_failed", "run_id": run.id, "error": str(exc)})
         self.store.save_run(run)
 
     def _default_body(self, run: Run, stage: Dict[str, Any]) -> str:
         return (
-            "# {0}\n\n"
-            "**Run:** {1}\n\n"
-            "**Workflow:** {2}\n\n"
-            "**Signal:**\n\n```\n{3}\n```\n\n"
-            "_Generated by Borscht Public Edition._\n"
+            "# {title}\n\n"
+            "**{run_l}:** {rid}\n\n"
+            "**{wf_l}:** {wf}\n\n"
+            "**{sig_l}:**\n\n```\n{sig}\n```\n\n"
+            "_{footer}_\n"
         ).format(
-            stage.get("title", "Result"),
-            run.id,
-            run.workflow,
-            self._signal_text(run.signal) or "(empty)",
+            title=stage.get("title", i18n.t("body.result")),
+            run_l=i18n.t("body.run"),
+            rid=run.id,
+            wf_l=i18n.t("body.workflow"),
+            wf=run.workflow,
+            sig_l=i18n.t("body.signal"),
+            sig=self._signal_text(run.signal) or i18n.t("body.empty"),
+            footer=i18n.t("body.generated_by"),
         )
 
     @staticmethod
     def _first_reason(decisions, effect: str) -> str:
         for d in decisions:
             if d.effect == effect and d.matched and not d.simulated:
-                return d.reason
+                return i18n.policy_reason(d.rule_id, d.reason)
         return ""
 
     # ---- lifecycle actions ----------------------------------------------
@@ -237,7 +244,7 @@ class Engine:
             raise EngineError("run is not awaiting approval (status={0})".format(run.status))
         run.approver = approver
         run.verdict = Verdict.GO
-        self._add_step(run, "decision", approver, "ok", "Approved by {0}. Verdict: GO.".format(approver))
+        self._add_step(run, "decision", approver, "ok", i18n.t("step.approved", actor=approver))
         self.store.append_event({"event": "run_approved", "run_id": run.id, "approver": approver})
         self._execute(run, approver)
         return run
@@ -248,7 +255,7 @@ class Engine:
             raise EngineError("run cannot be rejected (status={0})".format(run.status))
         run.approver = approver
         run.verdict = Verdict.STOP
-        run.explanation = reason or "Rejected by {0}.".format(approver)
+        run.explanation = reason or i18n.t("step.rejected", actor=approver)
         self._add_step(run, "decision", approver, "blocked", run.explanation)
         self._set_status(run, RunStatus.FAILED)
         self.store.save_run(run)
@@ -260,7 +267,7 @@ class Engine:
         if run.status == RunStatus.RUNNING:
             self._set_status(run, RunStatus.AWAITING_APPROVAL)
         run.verdict = Verdict.HOLD
-        self._add_step(run, "decision", actor, "pending", "Run held for review.")
+        self._add_step(run, "decision", actor, "pending", i18n.t("step.held"))
         self.store.save_run(run)
         self.store.append_event({"event": "run_held", "run_id": run.id})
         return run
@@ -269,7 +276,7 @@ class Engine:
         run = self._require(run_id_)
         if run.status not in (RunStatus.BLOCKED_BY_POLICY, RunStatus.AWAITING_APPROVAL):
             raise EngineError("only blocked/awaiting runs can be waived")
-        run.explanation = "Policy waived by {0}. {1}".format(actor, reason).strip()
+        run.explanation = i18n.t("explain.waived", actor=actor, reason=reason).strip()
         self._add_step(run, "decision", actor, "ok", run.explanation)
         self._set_status(run, RunStatus.WAIVED)
         self.store.save_run(run)
@@ -281,10 +288,14 @@ class Engine:
         run = self._require(run_id_)
         if run.status not in (RunStatus.SUCCEEDED, RunStatus.FAILED, RunStatus.WAIVED):
             raise EngineError("only finished runs can be rolled back (status={0})".format(run.status))
-        note = "# Rollback\n\nRun **{0}** rolled back by {1}.\n\n{2}\n".format(run.id, actor, reason)
-        ev = self.store.write_artifact(run.id, "markdown", "Rollback record", note)
+        note = "# {0}\n\n{1}\n\n{2}\n".format(
+            i18n.t("rollback.title"),
+            i18n.t("rollback.note", id=run.id, actor=actor),
+            reason,
+        )
+        ev = self.store.write_artifact(run.id, "markdown", i18n.t("rollback.title"), note)
         run.add_evidence(ev)
-        self._add_step(run, "rollback", actor, "ok", "Run rolled back.", raw={"reason": reason})
+        self._add_step(run, "rollback", actor, "ok", i18n.t("step.rollback"), raw={"reason": reason})
         run.verdict = Verdict.STOP
         self._set_status(run, RunStatus.ROLLED_BACK)
         self.store.save_run(run)
@@ -296,7 +307,7 @@ class Engine:
         if run.status != RunStatus.FAILED:
             raise EngineError("only failed runs can be retried")
         self._set_status(run, RunStatus.RUNNING)
-        self._add_step(run, "decision", actor, "ok", "Retry requested.")
+        self._add_step(run, "decision", actor, "ok", i18n.t("step.retry"))
         self._execute(run, actor)
         return run
 

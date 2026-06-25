@@ -1,8 +1,10 @@
 import React from "react";
 import { api, EvalResult } from "../api";
+import { useT } from "../i18n";
 import { Card, ErrorState, Loading } from "../components/ui";
 
 export default function Evaluations() {
+  const t = useT();
   const [data, setData] = React.useState<EvalResult | null>(null);
   const [error, setError] = React.useState("");
   const [running, setRunning] = React.useState(false);
@@ -28,26 +30,26 @@ export default function Evaluations() {
     <div>
       <div className="page-head">
         <div>
-          <h1>Evaluations</h1>
-          <p>Confidence that the system can be updated without breaking. Can we release, or not — and why.</p>
+          <h1>{t("ev.title")}</h1>
+          <p>{t("ev.subtitle")}</p>
         </div>
-        <button className="btn-primary" disabled={running} onClick={run}>{running ? "Running…" : "Run eval suite"}</button>
+        <button className="btn-primary" disabled={running} onClick={run}>{running ? t("ev.running") : t("ev.run")}</button>
       </div>
 
       {data && (
         <>
           <div className={`banner ${data.summary.release_recommendation === "release" ? "ok" : "danger"}`}>
             {data.summary.release_recommendation === "release"
-              ? `Safe to release — ${data.summary.passed}/${data.summary.total} passed (${data.summary.pass_rate}%).`
-              : `Do not release — ${data.summary.failed} failing, ${data.summary.blocking_failures} blocking.`}
+              ? t("ev.safe", { passed: data.summary.passed, total: data.summary.total, rate: data.summary.pass_rate })
+              : t("ev.unsafe", { failed: data.summary.failed, blocking: data.summary.blocking_failures })}
           </div>
 
           <div className="stack">
             {data.packs.map((p) => (
-              <Card key={p.id} title={`${p.title} · ${p.type}${p.blocking ? " · blocking" : ""}`}>
-                <p className="dim">{p.passed}/{p.total} passed</p>
+              <Card key={p.id} title={`${p.title} · ${p.type}${p.blocking ? " " + t("ev.blocking") : ""}`}>
+                <p className="dim">{t("ev.passedOf", { passed: p.passed, total: p.total })}</p>
                 <table>
-                  <thead><tr><th>Case</th><th>Workflow</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead>
+                  <thead><tr><th>{t("ev.col.case")}</th><th>{t("ev.col.workflow")}</th><th>{t("ev.col.expected")}</th><th>{t("ev.col.actual")}</th><th>{t("ev.col.result")}</th></tr></thead>
                   <tbody>
                     {p.cases.map((c) => (
                       <tr key={c.id}>
@@ -55,7 +57,7 @@ export default function Evaluations() {
                         <td>{c.workflow}</td>
                         <td>{c.expected}</td>
                         <td>{c.actual}</td>
-                        <td className={c.ok ? "eff-allow" : "eff-deny"}>{c.ok ? "PASS" : "FAIL"}</td>
+                        <td className={c.ok ? "eff-allow" : "eff-deny"}>{c.ok ? t("ev.pass") : t("ev.fail")}</td>
                       </tr>
                     ))}
                   </tbody>

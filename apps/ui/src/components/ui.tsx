@@ -1,7 +1,9 @@
 import React from "react";
+import { useT } from "../i18n";
 
 export function StatusBadge({ status }: { status: string }) {
-  return <span className={`badge dot st-${status}`}>{status.replace(/_/g, " ")}</span>;
+  const t = useT();
+  return <span className={`badge dot st-${status}`}>{t("status." + status)}</span>;
 }
 
 export function RiskBadge({ risk }: { risk: string }) {
@@ -9,7 +11,8 @@ export function RiskBadge({ risk }: { risk: string }) {
 }
 
 export function EffectBadge({ effect }: { effect: string }) {
-  return <span className={`badge eff-${effect}`}>{effect.replace(/_/g, " ")}</span>;
+  const t = useT();
+  return <span className={`badge eff-${effect}`}>{t("effect." + effect)}</span>;
 }
 
 export function Card({ title, children, actions }: { title?: string; children: React.ReactNode; actions?: React.ReactNode }) {
@@ -46,12 +49,14 @@ export function Empty({ title, hint, action }: { title: string; hint?: string; a
 }
 
 export function Loading() {
-  return <div className="state">Loading…</div>;
+  const t = useT();
+  return <div className="state">{t("common.loading")}</div>;
 }
 
 export function ErrorState({ error }: { error: string }) {
+  const t = useT();
   return (
-    <div className="banner danger">Error: {error}</div>
+    <div className="banner danger">{t("common.error")}: {error}</div>
   );
 }
 

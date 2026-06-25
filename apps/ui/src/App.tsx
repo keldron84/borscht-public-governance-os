@@ -7,6 +7,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { api } from "./api";
+import { useI18n, SUPPORTED } from "./i18n";
 import Overview from "./pages/Overview";
 import NewRun from "./pages/NewRun";
 import Runs from "./pages/Runs";
@@ -19,18 +20,19 @@ import Templates from "./pages/Templates";
 import Settings from "./pages/Settings";
 
 const NAV = [
-  { to: "/", label: "Overview", end: true },
-  { to: "/runs", label: "Runs" },
-  { to: "/approvals", label: "Approvals" },
-  { to: "/policies", label: "Policies" },
-  { to: "/observability", label: "Observability" },
-  { to: "/evaluations", label: "Evaluations" },
-  { to: "/templates", label: "Templates" },
-  { to: "/settings", label: "Settings" },
+  { to: "/", key: "nav.overview", end: true },
+  { to: "/runs", key: "nav.runs" },
+  { to: "/approvals", key: "nav.approvals" },
+  { to: "/policies", key: "nav.policies" },
+  { to: "/observability", key: "nav.observability" },
+  { to: "/evaluations", key: "nav.evaluations" },
+  { to: "/templates", key: "nav.templates" },
+  { to: "/settings", key: "nav.settings" },
 ];
 
 function TopBar() {
   const navigate = useNavigate();
+  const { t, lang, setLang } = useI18n();
   const [q, setQ] = React.useState("");
   const [paused, setPaused] = React.useState(false);
 
@@ -56,45 +58,58 @@ function TopBar() {
       <form className="search" onSubmit={onSearch}>
         <input
           type="search"
-          placeholder="Search runs (id or text)…"
+          placeholder={t("top.search")}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
       </form>
       <span className="env-badge">env: local</span>
       <span className="env-badge">user:operator</span>
+      <select
+        className="lang-select"
+        aria-label={t("lang.label")}
+        value={lang}
+        onChange={(e) => setLang(e.target.value as (typeof SUPPORTED)[number])}
+      >
+        {SUPPORTED.map((l) => (
+          <option key={l} value={l}>
+            {l.toUpperCase()}
+          </option>
+        ))}
+      </select>
       <button className="btn-primary btn-sm" onClick={() => navigate("/new")}>
-        + New Run
+        {t("top.newRun")}
       </button>
       <button
         className={paused ? "btn-danger btn-sm" : "btn-sm"}
         onClick={togglePause}
-        title="Emergency pause: blocks new runs"
+        title={t("top.pauseTitle")}
       >
-        {paused ? "Paused" : "Pause all"}
+        {paused ? t("top.paused") : t("top.pauseAll")}
       </button>
     </div>
   );
 }
 
 function Shell() {
+  const { t } = useI18n();
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
           Borscht
-          <small>Public Edition · control plane</small>
+          <small>{t("brand.subtitle")}</small>
         </div>
         <nav className="nav">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}>
               <span className="nav-dot" />
-              {n.label}
+              {t(n.key)}
             </NavLink>
           ))}
         </nav>
         <div className="sidebar-foot">
-          Signal → Triage → Decision → Execution → Evidence
+          {t("sidebar.pipeline")}
         </div>
       </aside>
       <div className="main">
