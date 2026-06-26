@@ -11,11 +11,11 @@ requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
   { name = "Nikita Grigorovich", email = "nikita@borscht.mobi" },
-  { name = "Kirr Simakovs", email = "kired.simakov@gmail.com" },
+  { name = "Kirr Simakovs", email = "ai@monosnap.ai" },
 ]
 maintainers = [
   { name = "Nikita Grigorovich", email = "nikita@borscht.mobi" },
-  { name = "Kirr Simakovs", email = "kired.simakov@gmail.com" },
+  { name = "Kirr Simakovs", email = "ai@monosnap.ai" },
 ]
 keywords = ["agent", "governance", "control-plane", "policy", "evidence", "audit"]
 dependencies = []
